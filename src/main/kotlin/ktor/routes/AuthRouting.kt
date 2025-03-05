@@ -1,18 +1,23 @@
 package com.ktor.routes
 
+import domain.models.User
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+// Simulación de una base de datos en memoria
+val users = mutableMapOf<String, User>()
+
 fun Route.authRouting() {
     route("/auth") {
         post("/login") {
-            val request = call.receive<Map<String, String>>() // Recibir credenciales
-            val username = request["username"]
-            val password = request["password"]
+            val request = call.receive<Map<String, String>>()
+            val email = request["email"]
+            val contrasenna = request["contrasenna"]
 
-            if (username == "admin" && password == "password") {
+            val user = users[email]
+            if (user != null && user.contrasenna == contrasenna) {
                 call.respond(mapOf("message" to "Login exitoso", "token" to "fake-jwt-token"))
             } else {
                 call.respond(mapOf("error" to "Credenciales incorrectas"))
@@ -20,11 +25,13 @@ fun Route.authRouting() {
         }
 
         post("/register") {
-            val request = call.receive<Map<String, String>>() // Recibir datos de registro
-            val username = request["username"]
-            val email = request["email"]
-
-            call.respond(mapOf("message" to "Usuario $username registrado con éxito", "email" to email))
+            val user = call.receive<User>()
+            if (users.containsKey(user.email)) {
+                call.respond(mapOf("error" to "El usuario ya está registrado"))
+            } else {
+                users[user.email] = user
+                call.respond(mapOf("message" to "Usuario registrado con éxito", "email" to user.email))
+            }
         }
     }
 }

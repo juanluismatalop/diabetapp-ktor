@@ -1,15 +1,19 @@
 package com.ktor.routes
 
 import domain.models.User
+import domain.usecase.GetAllUserUseCase
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 val user = mutableMapOf<String, User>()
 
-fun Route.userRouting() {
+fun Route.userRouting(
+    getAllUserUseCase: GetAllUserUseCase
+) {
     route("/users") {
         get {
-            call.respond(users.values.toList())
+            val reviews = getAllUserUseCase()
+            call.respond(reviews)
         }
 
         get("/{email}") {

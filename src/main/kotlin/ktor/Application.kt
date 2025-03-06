@@ -1,19 +1,31 @@
 package com.ktor
 
 import com.data.inmemory.repository.MemoryUserRepository
+import com.data.persistence.repository.PersistenceUserRepository
 import domain.repository.UserInterface
-import domain.usecase.GetAllUserUseCase
+import domain.usecase.*
 import io.ktor.server.application.*
+import io.ktor.server.config.yaml.*
+import ktor.configureDatabases
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
 }
 
 fun Application.module() {
+
+    configureDatabases()
+
     configureSerialization()
 
+    val userRepository: UserInterface = PersistenceUserRepository()
 
-    val userRepository: UserInterface = MemoryUserRepository()
-    val getAllUserUseCase= GetAllUserUseCase(userRepository)
-    configureRouting(getAllUserUseCase)
+    val getAllUserUseCase = GetAllUserUseCase(userRepository)
+    val getUserByEmailUseCase = GetUserByEmailUseCase(userRepository)
+    val insertUserUseCase = InsertUserUseCase(userRepository)
+    val deleteUserUseCase = DeleteUserUseCase(userRepository)
+    val updateUserUseCase = UpdateUserUseCase(userRepository)
+
+    configureRouting(getAllUserUseCase, getUserByEmailUseCase, insertUserUseCase, deleteUserUseCase, updateUserUseCase)
+
 }

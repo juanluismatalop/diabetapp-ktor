@@ -1,34 +1,33 @@
 package com.data.persistence.repository
 
 import com.data.persistence.models.UserTable
-
-
 import com.domain.security.JwtConfig
 import domain.models.User
 import domain.repository.UserInterface
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.transactions.transaction
 
 class PersistenceUserRepository : UserInterface {
 
-    override fun getAllUsers(): List<User> = transaction {
+    // Obtener todos los usuarios
+    override suspend fun getAllUsers(): List<User> = newSuspendedTransaction {
         UserTable.selectAll().map { rowToUser(it) }
     }
 
-    override fun getUserByEmail(email: String): List<User> = transaction {
-        UserTable.select { UserTable.email eq email }
-            .map { rowToUser(it) }
+    // Obtener un usuario por email
+    override suspend fun getUserByEmail(email: String): List<User> = newSuspendedTransaction {
+        UserTable.select { UserTable.email eq email }.map { rowToUser(it) }
     }
 
-    override fun postUser(user: User): Boolean = transaction {
+    // Crear un nuevo usuario
+    override suspend fun postUser(user: User): Boolean = newSuspendedTransaction {
         val exists = UserTable.select { UserTable.email eq user.email }.count() > 0
-        if (exists) return@transaction false
+        if (exists) return@newSuspendedTransaction false
 
         UserTable.insert {
             it[email] = user.email
-            it[contrasenna] = user.contrasenna // Almacena directamente la contraseña
+            it[contrasenna] = user.contrasenna // Almacena la contraseña en texto plano
             it[ratioMannana] = user.ratioMannana
             it[ratioMedioDia] = user.ratioMedioDia
             it[ratioTarde] = user.ratioTarde
@@ -38,7 +37,8 @@ class PersistenceUserRepository : UserInterface {
         true
     }
 
-    override fun updateUser(user: User, email: String): Boolean = transaction {
+    // Actualizar un usuario existente
+    override suspend fun updateUser(user: User, email: String): Boolean = newSuspendedTransaction {
         val updatedRows = UserTable.update({ UserTable.email eq email }) {
             it[contrasenna] = user.contrasenna
             it[ratioMannana] = user.ratioMannana
@@ -50,7 +50,8 @@ class PersistenceUserRepository : UserInterface {
         updatedRows > 0
     }
 
-    override fun deleteUser(email: String): Boolean = transaction {
+    // Eliminar un usuario por email
+    override suspend fun deleteUser(email: String): Boolean = newSuspendedTransaction {
         val deletedRows = UserTable.deleteWhere { UserTable.email eq email }
         deletedRows > 0
     }
@@ -64,6 +65,7 @@ class PersistenceUserRepository : UserInterface {
         user?.let { JwtConfig.generateToken(it.email) }
     }
 
+    // Convertir una fila de la base de datos a un objeto User
     private fun rowToUser(row: ResultRow): User = User(
         email = row[UserTable.email],
         contrasenna = row[UserTable.contrasenna],

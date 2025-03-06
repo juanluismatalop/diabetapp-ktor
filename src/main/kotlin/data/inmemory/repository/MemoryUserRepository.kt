@@ -5,15 +5,16 @@ import domain.models.User
 import domain.repository.UserInterface
 
 class MemoryUserRepository : UserInterface {
-    override fun getAllUsers(): List<User> {
+
+    override suspend fun getAllUsers(): List<User> {
         return UserData.listUser
     }
 
-    override fun getUserByEmail(email: String): List<User> {
+    override suspend fun getUserByEmail(email: String): List<User> {
         return UserData.listUser.filter { it.email == email }
     }
 
-    override fun postUser(user: User): Boolean {
+    override suspend fun postUser(user: User): Boolean {
         val existingUser = getUserByEmail(user.email)
         return if (existingUser.isNotEmpty()) {
             false
@@ -23,7 +24,7 @@ class MemoryUserRepository : UserInterface {
         }
     }
 
-    override fun updateUser(user: User, email: String): Boolean {
+    override suspend fun updateUser(user: User, email: String): Boolean {
         val index = UserData.listUser.indexOfFirst { it.email == email }
         return if (index != -1) {
             val existingUser = UserData.listUser[index]
@@ -41,7 +42,7 @@ class MemoryUserRepository : UserInterface {
         }
     }
 
-    override fun deleteUser(email: String): Boolean {
+    override suspend fun deleteUser(email: String): Boolean {
         val index = UserData.listUser.indexOfFirst { it.email == email }
         return if (index != -1) {
             UserData.listUser.removeAt(index)

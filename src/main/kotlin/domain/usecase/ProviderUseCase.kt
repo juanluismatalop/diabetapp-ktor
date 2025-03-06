@@ -1,9 +1,9 @@
 package domain.usecase
 
-import domain.repository.UserInterface
+import com.data.persistence.repository.PersistenceUserRepository
 
 class ProviderUseCase(
-    repository: UserInterface
+    repository: PersistenceUserRepository // Cambiar el tipo aquí
 ) {
     val getAllUsers = GetAllUserUseCase(repository)
     val getUserByEmail = GetUserByEmailUseCase(repository)

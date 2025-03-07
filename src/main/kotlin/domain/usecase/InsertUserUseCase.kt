@@ -4,5 +4,5 @@ import domain.models.User
 import domain.repository.UserInterface
 
 class InsertUserUseCase(private val repository: UserInterface) {
-    operator fun invoke(user: User): Boolean = repository.postUser(user)
+    suspend operator fun invoke(user: User): Boolean = repository.postUser(user)
 }

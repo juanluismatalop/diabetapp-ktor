@@ -40,12 +40,18 @@ fun Route.userRouting(
 
         // Crear un usuario
         post {
-            val user = call.receive<User>()
-            val result = insertUserUseCase(user)
-            if (result) {
-                call.respond(HttpStatusCode.Created, mapOf("message" to "Usuario creado exitosamente"))
-            } else {
-                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Error al crear usuario"))
+            try {
+                val user = call.receive<User>()
+                println("Recibida solicitud para crear usuario: ${user.email}")
+                val result = insertUserUseCase(user)
+                if (result) {
+                    call.respond(HttpStatusCode.Created, mapOf("message" to "Usuario creado exitosamente"))
+                } else {
+                    call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Error al crear usuario"))
+                }
+            } catch (e: Exception) {
+                println("Error en la ruta POST /users: ${e.message}")
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Datos inválidos o error en la solicitud"))
             }
         }
 

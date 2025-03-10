@@ -2,15 +2,15 @@ package domain.models
 
 import kotlinx.serialization.Serializable
 
-@Serializable
 data class User(
-    val email : String,
-    val contrasenna : String,
-    val ratioMannana : Double,
-    val ratioMedioDia : Double,
-    val ratioTarde : Double,
-    val ratioNoche : Double,
-    val factorSensibilidad : Double
+    val id: Int, // Añadir el id
+    val email: String,
+    val contrasenna: String,
+    val ratioMannana: Double?,
+    val ratioMedioDia: Double?,
+    val ratioTarde: Double?,
+    val ratioNoche: Double?,
+    val factorSensibilidad: Double?
 )
 
 /*

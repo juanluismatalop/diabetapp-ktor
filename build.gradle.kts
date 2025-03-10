@@ -22,6 +22,7 @@ repositories {
 dependencies {
     implementation(libs.ktor.server.core)
     implementation("mysql:mysql-connector-java:8.0.33")
+    implementation("org.mindrot:jbcrypt:0.4")
 
     // Exposed (sin `exposed-ktx`, porque no existe)
     implementation("org.jetbrains.exposed:exposed-core:0.41.1")

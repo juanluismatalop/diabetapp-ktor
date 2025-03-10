@@ -1,12 +1,13 @@
 CREATE TABLE User (
-    email VARCHAR(255) PRIMARY KEY NOT NULL,
-    contrasenna VARCHAR(255) NOT NULL,
-    ratioMannana DOUBLE NOT NULL,
-    ratioMedioDia DOUBLE NOT NULL,
-    ratioTarde DOUBLE NOT NULL,
-    ratioNoche DOUBLE NOT NULL,
-    factorSensibilidad DOUBLE NOT NULL
-);ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='tabla de usuarios';
+                      id INT PRIMARY KEY AUTO_INCREMENT,
+                      email VARCHAR(255) UNIQUE NOT NULL,
+                      contrasenna VARCHAR(255) NOT NULL,
+                      ratioMannana DOUBLE NOT NULL,
+                      ratioMedioDia DOUBLE NOT NULL,
+                      ratioTarde DOUBLE NOT NULL,
+                      ratioNoche DOUBLE NOT NULL,
+                      factorSensibilidad DOUBLE NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='tabla de usuarios';
 
 INSERT INTO User (email, contrasenna, ratioMannana, ratioMedioDia, ratioTarde, ratioNoche, factorSensibilidad) VALUES
 ('juan.perez@example.com', 'password123', 0.8, 1.2, 1.0, 0.9, 1.5),

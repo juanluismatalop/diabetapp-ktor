@@ -3,11 +3,11 @@ package com.data.persistence.models
 import org.jetbrains.exposed.dao.id.IntIdTable
 
 object UserTable : IntIdTable("User") {
-    val email = varchar("email", 255).uniqueIndex() // Campo único y obligatorio
+    val email = varchar("email", 255).uniqueIndex()
     val contrasenna = varchar("contrasenna", 255)
-    val ratioMannana = double("ratio_mannana").default(0.0)
-    val ratioMedioDia = double("ratio_medio_dia").default(0.0)
-    val ratioTarde = double("ratio_tarde").default(0.0)
-    val ratioNoche = double("ratio_noche").default(0.0)
-    val factorSensibilidad = double("factor_sensibilidad").default(1.0)
+    val ratioMannana = double("ratioMannana").default(0.0)
+    val ratioMedioDia = double("ratioMedioDia").default(0.0)
+    val ratioTarde = double("ratioTarde").default(0.0)
+    val ratioNoche = double("ratioNoche").default(0.0)
+    val factorSensibilidad = double("factorSensibilidad").default(1.0)
 }

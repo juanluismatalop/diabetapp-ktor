@@ -7,72 +7,77 @@ import domain.repository.UserInterface
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import org.mindrot.jbcrypt.BCrypt
 
 class PersistenceUserRepository : UserInterface {
 
-    // Obtener todos los usuarios
     override suspend fun getAllUsers(): List<User> = newSuspendedTransaction {
-        UserTable.selectAll().map { rowToUser(it) }
+        UserTable.selectAll().map { it.toUser() }
     }
 
-    // Obtener un usuario por email
     override suspend fun getUserByEmail(email: String): List<User> = newSuspendedTransaction {
-        UserTable.select { UserTable.email eq email }.map { rowToUser(it) }
+        UserTable.select { UserTable.email eq email }
+            .map { it.toUser() }
     }
 
-    // Crear un nuevo usuario
     override suspend fun postUser(user: User): Boolean = newSuspendedTransaction {
         val exists = UserTable.select { UserTable.email eq user.email }.count() > 0
         if (exists) return@newSuspendedTransaction false
 
+        val hashedPassword = BCrypt.hashpw(user.contrasenna, BCrypt.gensalt())
+
         UserTable.insert {
             it[email] = user.email
-            it[contrasenna] = user.contrasenna // Almacena la contraseña en texto plano
-            it[ratioMannana] = user.ratioMannana
-            it[ratioMedioDia] = user.ratioMedioDia
-            it[ratioTarde] = user.ratioTarde
-            it[ratioNoche] = user.ratioNoche
-            it[factorSensibilidad] = user.factorSensibilidad
+            it[contrasenna] = hashedPassword
+            it[ratioMannana] = user.ratioMannana ?: 0.0
+            it[ratioMedioDia] = user.ratioMedioDia ?: 0.0
+            it[ratioTarde] = user.ratioTarde ?: 0.0
+            it[ratioNoche] = user.ratioNoche ?: 0.0
+            it[factorSensibilidad] = user.factorSensibilidad ?: 0.0
         }
         true
     }
 
-    // Actualizar un usuario existente
     override suspend fun updateUser(user: User, email: String): Boolean = newSuspendedTransaction {
+        val hashedPassword = BCrypt.hashpw(user.contrasenna, BCrypt.gensalt())
+
         val updatedRows = UserTable.update({ UserTable.email eq email }) {
-            it[contrasenna] = user.contrasenna
-            it[ratioMannana] = user.ratioMannana
-            it[ratioMedioDia] = user.ratioMedioDia
-            it[ratioTarde] = user.ratioTarde
-            it[ratioNoche] = user.ratioNoche
-            it[factorSensibilidad] = user.factorSensibilidad
+            it[contrasenna] = hashedPassword
+            it[ratioMannana] = user.ratioMannana ?: 0.0
+            it[ratioMedioDia] = user.ratioMedioDia ?: 0.0
+            it[ratioTarde] = user.ratioTarde ?: 0.0
+            it[ratioNoche] = user.ratioNoche ?: 0.0
+            it[factorSensibilidad] = user.factorSensibilidad ?: 0.0
         }
         updatedRows > 0
     }
 
-    // Eliminar un usuario por email
     override suspend fun deleteUser(email: String): Boolean = newSuspendedTransaction {
         val deletedRows = UserTable.deleteWhere { UserTable.email eq email }
         deletedRows > 0
     }
 
-    // Método para login con JWT
     suspend fun login(email: String, password: String): String? = newSuspendedTransaction {
-        val user = UserTable.select { UserTable.email eq email and (UserTable.contrasenna eq password) }
-            .map { rowToUser(it) }
-            .firstOrNull()
+        val user = UserTable.select { UserTable.email eq email }
+            .map { it.toUser() }
+            .singleOrNull()
 
-        user?.let { JwtConfig.generateToken(it.email) }
+        user?.let {
+            if (BCrypt.checkpw(password, it.contrasenna)) {
+                JwtConfig.generateToken(it.email)
+            } else null
+        }
     }
-
-    // Convertir una fila de la base de datos a un objeto User
-    private fun rowToUser(row: ResultRow): User = User(
-        email = row[UserTable.email],
-        contrasenna = row[UserTable.contrasenna],
-        ratioMannana = row[UserTable.ratioMannana],
-        ratioMedioDia = row[UserTable.ratioMedioDia],
-        ratioTarde = row[UserTable.ratioTarde],
-        ratioNoche = row[UserTable.ratioNoche],
-        factorSensibilidad = row[UserTable.factorSensibilidad]
-    )
 }
+
+// Función de extensión para convertir ResultRow en User
+fun ResultRow.toUser(): User = User(
+    id = this[UserTable.id].value,
+    email = this[UserTable.email],
+    contrasenna = this[UserTable.contrasenna], // Ahora está hasheada
+    ratioMannana = this[UserTable.ratioMannana],
+    ratioMedioDia = this[UserTable.ratioMedioDia],
+    ratioTarde = this[UserTable.ratioTarde],
+    ratioNoche = this[UserTable.ratioNoche],
+    factorSensibilidad = this[UserTable.factorSensibilidad]
+)
